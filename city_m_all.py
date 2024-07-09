@@ -3,6 +3,9 @@ import pandas as pd
 from bs4 import BeautifulSoup
 from datetime import datetime
 
+# 定義全域變數來控制篩選日期
+START_DATE = '2023-12'
+
 def fetch_data(session, url, headers):
     response = session.get(url, headers=headers)
     response.encoding = 'utf-8'
@@ -82,7 +85,7 @@ for county, code in county_list.items():
     additional_data = fetch_additional_data(session, additional_url, headers)
     
     if data:
-        filtered_data = filter_recent_data(page_headers, data, '立案日期', '2023-12')
+        filtered_data = filter_recent_data(page_headers, data, '立案日期', START_DATE)
         df = pd.DataFrame(filtered_data, columns=page_headers)
         additional_df = pd.DataFrame(additional_data)
         
@@ -95,7 +98,7 @@ for county, code in county_list.items():
 
 if all_data:
     combined_df = pd.concat(all_data, ignore_index=True)
-    combined_df.to_csv('combined_data.csv', index=False, encoding='utf-8-sig')
+    combined_df.to_csv('combined_data.csv', index=False, encoding='utf-8-sig', quotechar='"', sep=';')
     print("所有資料已成功抓取並合併為 combined_data.csv")
 else:
     print("未能抓取到任何資料")
