@@ -10,6 +10,12 @@ county_list = {
     "臺東縣": 89, "澎湖縣": 69, "金門縣": 82, "連江縣": 83
 }
 
+# 全域變數參數
+START_YEAR = 2023
+START_MONTH = '12'
+END_YEAR = 2024
+END_MONTH = '06'
+
 # 定義請求頭
 headers = {
     'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7',
@@ -30,10 +36,13 @@ headers = {
     'sec-ch-ua-platform': '"macOS"',
 }
 
+# 初始化一個空的DataFrame來存儲所有縣市的數據
+all_data = pd.DataFrame()
+
 # 遍歷所有縣市
 for county, code in county_list.items():
-    # 定義每個縣市的URL
-    url = f'https://bsb.kh.edu.tw/afterschool/register/print_cancel_list_b.jsp?pageno=1&citylink=&unit=&c_type=&area=&road=&sn_year=&sn_month=&end_year=&end_month=&city={code}&pnt=2&local='
+    # 定義每個縣市的主要資料URL
+    url = f'https://bsb.kh.edu.tw/afterschool/register/print_cancel_list_b.jsp?pageno=1&citylink=&unit=&c_type=&area=&road=&sn_year={START_YEAR}&sn_month={START_MONTH}&end_year={END_YEAR}&end_month={END_MONTH}&city={code}&pnt=2&local='
     
     # 發送請求
     response = requests.get(url, headers=headers)
@@ -58,7 +67,13 @@ for county, code in county_list.items():
     # 將數據轉換為DataFrame
     df = pd.DataFrame(data, columns=table_headers)
     
-    # 保存為CSV文件
-    df.to_csv(f'{county}_cancel_list.csv', index=False, encoding='utf-8-sig')
-    
-    print(f'{county}的資料已保存為{county}_cancel_list.csv')
+    # 添加縣市列
+    df['縣市'] = county
+
+    # 合併數據
+    all_data = pd.concat([all_data, df], ignore_index=True)
+
+# 保存所有數據到一個CSV檔案
+all_data.to_csv('all_counties_cancel_list.csv', index=False, encoding='utf-8-sig')
+
+print('所有縣市的資料已保存為all_counties_cancel_list.csv')
